@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Writing Great Git Commit Messages | Sundeep Gupta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="People care about why you do things, more than what you do. This notion certainly carries true for our Git commits. Today, I explore a best practice for writing great Git commit messages.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Writing Great Git Commit Messages">
+<meta property="og:url" content="http://sundeepgupta.github.io/2015/01/17/writing-great-git-commit-messages/index.html">
+<meta property="og:site_name" content="Sundeep Gupta">
+<meta property="og:description" content="People care about why you do things, more than what you do. This notion certainly carries true for our Git commits. Today, I explore a best practice for writing great Git commit messages.">
+<meta property="og:image" content="http://i.imgur.com/QCpZaIk.png">
+<meta property="og:updated_time" content="2017-02-17T04:25:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Writing Great Git Commit Messages">
+<meta name="twitter:description" content="People care about why you do things, more than what you do. This notion certainly carries true for our Git commits. Today, I explore a best practice for writing great Git commit messages.">
+<meta name="twitter:image" content="http://i.imgur.com/QCpZaIk.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Sundeep Gupta" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Sundeep Gupta</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">iOS Software Crafter, Toronto</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://sundeepgupta.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-writing-great-git-commit-messages" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/01/17/writing-great-git-commit-messages/" class="article-date">
+  <time datetime="2015-01-17T18:34:14.000Z" itemprop="datePublished">2015-01-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Uncategorized/">Uncategorized</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Writing Great Git Commit Messages
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>People care about <em>why</em> you do things, more than <em>what</em> you do. This notion certainly carries true for our Git commits. Today, I explore a best practice for writing great Git commit messages.</p>
+<a id="more"></a>
+<h2 id="The-Golden-Circle"><a href="#The-Golden-Circle" class="headerlink" title="The Golden Circle"></a>The Golden Circle</h2><p>I recently re-watched one of my favourite TED Talks by Simon Sinek: <a href="http://www.ted.com/talks/simon_sinek_how_great_leaders_inspire_action" target="_blank" rel="external">How Great Leaders Inspire Action</a></p>
+<p>In this talk, Simon explains a very simple notion that people are inspired by why leaders do things, not what they do. Well guess what! It’s the same for our git commit messages.</p>
+<p><img src="http://i.imgur.com/QCpZaIk.png" alt=""></p>
+<p>Simon draws the “golden circle” above (a heck of lot better than mine) and explains that great companies have a profound purpose and are really good at communicating that purpose. With our code, we can think of each commit having its own purpose. And that it’s our job to communicate it.</p>
+<h2 id="Why-Does-This-Matter"><a href="#Why-Does-This-Matter" class="headerlink" title="Why Does This Matter?"></a>Why Does This Matter?</h2><p>You may be wondering, what’s the big deal? Why write about something so inconsequential. If you’ve ever worked on a team, or a long term project, you’ll come across code you need to work with and don’t understand why it’s there. You’ll <a href="http://git-scm.com/docs/git-blame" target="_blank" rel="external"><code>git blame</code></a> it, find the commit and look at it. After the mini anxiety attack you just encountered hoping that commit wasn’t made by you :), you read the commit message hoping to find your answer to “why was this done?”.</p>
+<p>Further, the vast majority of commit messages I’ve seen suffer from this problem. Including mine, until not so long ago. In fact, I used to be proud of my commit messages. I thought about them carefully and wrote them as clear as I could.</p>
+<h2 id="The-“Aha”-Moment"><a href="#The-“Aha”-Moment" class="headerlink" title="The “Aha” Moment"></a>The “Aha” Moment</h2><p>One day, I was pairing with <a href="https://twitter.com/maedhr" target="_blank" rel="external">Craig Savolainen</a>, a mentor and one of the best developers I know. We were ready to commit our code and I wrote what I thought was a pretty decent commit message, until he explained that my commit message wan’t useful. Then told me this:</p>
+<blockquote>
+<p>Anyone can see WHAT you did just by looking at the code. But the code can never tell someone WHY you did it.</p>
+</blockquote>
+<p>Brilliant! I immediately switched to the new, purposeful commit messages. But it took some time getting used to it, because now I actually had to think - imagine that! Answering the question “Why?” definitely takes more brain power. But now that I’ve been doing it regularly, it’s becoming fluid and natural. A pattern I’ve noticed is using the word “should” can help frame things.</p>
+<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>Here’s an example from an old project. I wrote this commit message in the old <em>what</em> style:</p>
+<blockquote>
+<p>Card view controller added.</p>
+</blockquote>
+<p>If I were to write this again in the new and improved <em>why</em> style, it would be:</p>
+<blockquote>
+<p>User should be able to see the card before editing it.</p>
+</blockquote>
+<p>See the difference? The second version provides the context around why this work was done. And this context can mean valuable effort saved by the developer working with this code later. And when that developer has questions, they will come looking for me. So, it also means effort saved by me, especially if I forgot why I originally made this commit, which will likely be the case!</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Writing a Git commit message that explains why we did something as opposed to what we did will help our teams out, and ourselves. A little bit of effort goes a long way here while making another stride in our journey to becoming better software craftsmen. If you have thoughts on this, or more Git message best practices, we’d love to hear about them.</p>
+<p>Happy exploring!</p>
+<hr>
+<h4 id="Side-Note"><a href="#Side-Note" class="headerlink" title="Side Note"></a>Side Note</h4><p>Obviously, this tip goes beyond Git and applies to any source control tool. I originally was using the term “code commit”, but based on feedback, I decided “Git commit” was more clear.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://sundeepgupta.github.io/2015/01/17/writing-great-git-commit-messages/" data-id="ciz9bbsxe001j3fys5ntraxn8" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/craftsmanship/">craftsmanship</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-control/">source control</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/01/28/how-to-speed-up-modal-animations-in-ios/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          How to speed up modal animations in iOS
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/01/10/blog-software-developer/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Blog Software For Me (A Developer)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Uncategorized/">Uncategorized</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/books/">books</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/business/">business</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/career/">career</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/coding/">coding</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/consulting/">consulting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/craftsmanship/">craftsmanship</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/culture/">culture</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/design-patterns/">design patterns</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/fun/">fun</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pair-programming/">pair programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance/">performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/source-control/">source control</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swift/">swift</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/testing/">testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/writing/">writing</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/books/" style="font-size: 10px;">books</a> <a href="/tags/business/" style="font-size: 14px;">business</a> <a href="/tags/career/" style="font-size: 12px;">career</a> <a href="/tags/coding/" style="font-size: 18px;">coding</a> <a href="/tags/consulting/" style="font-size: 14px;">consulting</a> <a href="/tags/craftsmanship/" style="font-size: 16px;">craftsmanship</a> <a href="/tags/culture/" style="font-size: 14px;">culture</a> <a href="/tags/design-patterns/" style="font-size: 14px;">design patterns</a> <a href="/tags/fun/" style="font-size: 10px;">fun</a> <a href="/tags/functional-programming/" style="font-size: 10px;">functional programming</a> <a href="/tags/ios/" style="font-size: 20px;">ios</a> <a href="/tags/pair-programming/" style="font-size: 10px;">pair programming</a> <a href="/tags/performance/" style="font-size: 10px;">performance</a> <a href="/tags/source-control/" style="font-size: 10px;">source control</a> <a href="/tags/swift/" style="font-size: 14px;">swift</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a> <a href="/tags/writing/" style="font-size: 10px;">writing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">February 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">March 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">January 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/07/">July 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/06/">June 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/05/">May 2013</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/02/16/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2017/02/16/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/">Handling web view requests using the Chain of Responsibility pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/17/strategy-pattern-done-functional-programming/">Strategy pattern done with Functional Programming</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/">Liquid smooth iOS collection view scrolling with lots of images</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Sundeep Gupta<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

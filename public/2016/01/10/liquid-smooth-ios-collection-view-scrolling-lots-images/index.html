@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Liquid smooth iOS collection view scrolling with lots of images | Sundeep Gupta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="An implementation of how I achieved smooth scrolling with lots of images that needed dynamic sizing and tinting.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Liquid smooth iOS collection view scrolling with lots of images">
+<meta property="og:url" content="http://sundeepgupta.github.io/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/index.html">
+<meta property="og:site_name" content="Sundeep Gupta">
+<meta property="og:description" content="An implementation of how I achieved smooth scrolling with lots of images that needed dynamic sizing and tinting.">
+<meta property="og:updated_time" content="2017-02-17T04:25:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Liquid smooth iOS collection view scrolling with lots of images">
+<meta name="twitter:description" content="An implementation of how I achieved smooth scrolling with lots of images that needed dynamic sizing and tinting.">
+  
+    <link rel="alternate" href="/atom.xml" title="Sundeep Gupta" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Sundeep Gupta</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">iOS Software Crafter, Toronto</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://sundeepgupta.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-liquid-smooth-ios-collection-view-scrolling-lots-images" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/" class="article-date">
+  <time datetime="2016-01-11T02:53:30.000Z" itemprop="datePublished">2016-01-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Uncategorized/">Uncategorized</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Liquid smooth iOS collection view scrolling with lots of images
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>An implementation of how I achieved smooth scrolling with lots of images that needed dynamic sizing and tinting.</p>
+<a id="more"></a>
+<h2 id="tl-dr"><a href="#tl-dr" class="headerlink" title="tl;dr"></a>tl;dr</h2><p>Skip to the <strong><a href="#solution">Solution</a></strong> section for the implementation which includes all the code examples.</p>
+<h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>On a recent project, I had an issue with choppy scrolling in a couple of collection views which held a grid of images. It wasn’t horrible, but noticeable enough, especially on slower phones.</p>
+<h3 id="Original-implementation"><a href="#Original-implementation" class="headerlink" title="Original implementation"></a>Original implementation</h3><p>The app has a domain object called a “cue”. Each cue had an image associated with it and we wanted to render cues in the “library”. Because the cues were static, they were placed in the asset catalog.</p>
+<pre><code>// CCLibraryViewController
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    CCCueCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([CCCueCell class]) forIndexPath:indexPath];
+    CCCue *cue = self.cues[indexPath.item];
+    [cell configureWithImage:[UIImage imageNamed:cue.name]];
+    return cell;
+}
+
+// CCCueCell
+- (void)configureWithImage:(UIImage *)image {
+    self.imageView.image = image;
+    [CCHelper tintImageView:self.imageView withColor:kGreyColor];
+}
+
+// CCHelper
++ (void)tintImageView:(UIImageView *)imageView withColor:(UIColor *)color {
+    UIImage *tintableImage = [imageView.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    imageView.image = tintableImage;
+    imageView.tintColor = color;
+}
+`&lt;/pre&gt;
+
+As you can see, everything is pretty straightforward here.
+
+### Sidebar:
+
+I&apos;ve learned since, that you can actually set your images&apos; rendering mode directly in the asset catalog GUI:
+
+![Rendering mode for asset catalog images](http://content.screencast.com/users/SundeepG/folders/Do%20not%20delete/media/ce8c5e04-7847-4b32-8ba2-ba22c45cc1dd/00000154.png)
+
+## Diagnosis
+
+It turns out there were 3 implementation details that contributed to the performance issue.
+</code></pre><ol>
+<li>Tinting</li>
+<li><code>UIImage imageNamed:</code></li>
+<li><p>Asset Catalog</p>
+<p>So, basically the entire implementation :)</p>
+<h3 id="Tinting"><a href="#Tinting" class="headerlink" title="Tinting"></a>Tinting</h3><p>I won’t get into why tinting was required, but there was a work around by providing natively sets of natively tinted images. It certainly helped, but there was still a bit of scroll lag.</p>
+<h3 id="UIImage-imageNamed"><a href="#UIImage-imageNamed" class="headerlink" title="UIImage imageNamed:"></a><code>UIImage imageNamed:</code></h3><p>If you do a search for <a href="https://duckduckgo.com/?q=uiimage%20imagenamed%20performance" target="_blank" rel="external">UIImage imageNamed performance</a>, you’ll get a lot of hits discussing problems with how Apple implements this. The key thing for our particular problem was that when an image instantiated this way is rendered by setting on a UIImageView, and because this must be done on the main (UI) queue, it causes a performance lag. It does this because the image must be decompressed at render time.</p>
+<h3 id="Asset-Catalog"><a href="#Asset-Catalog" class="headerlink" title="Asset Catalog"></a>Asset Catalog</h3><p>Based on the issues with <code>UIImage imageNamed:</code>, using the Asset Catalog was no longer an option. This wasn’t really causing anything actually, but I prefer to use the Asset Catalog when I can.</p>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>The goal was to get perfectly liquid smooth scrolling every time, even on the first scroll. To achieve this, I implemented a caching strategy that I pieced together from my research on the issue. In a nutshell:</p>
+</li>
+<li><p>Place the images in the bundle, not the Asset Catalog.</p>
+</li>
+<li>When the app loads, start caching asynchronously.</li>
+<li>Instantiate images using <code>UIImage imageWithContentsOfFile:</code> decompressing them and tint it as needed.</li>
+<li>Wrap them in NSPurgeableData instances.</li>
+<li><p>Use the images from the cache if available, otherwise create them and and cache them.</p>
+<p>Let’s go through all of this with actual code examples.</p>
+<h3 id="The-cache"><a href="#The-cache" class="headerlink" title="The cache"></a>The cache</h3><p>I used a simple NSCache object to provide automatic memory managed caching. Much preferred over NSDictionary. You can <a href="http://nshipster.com/nscache/" target="_blank" rel="external">read more about NSCache here</a>.</p>
+<pre>`- (void)cacheSystemCueImages {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        for (CCSystemCue *cue in self.systemCues) {
+            NSString *key = [cue thumbnailCacheKey];
+            if ([self.systemCueImageCache objectForKey:key]) {
+                continue;
+            }
+
+            CCDiscardableImage *discardable = [CCHelper decompressedImageForPath:[cue imagePath] size:[cue thumbnailSize] tintable:[cue tintable]];
+            [self.systemCueImageCache setObject:discardable forKey:key];
+        }
+    });
+}
+`</pre>
+
+<p>Here you can see the caching done on a background queue so it doesn’t block the UI. Each image is stored along with a unique key, used to retrieve it later. I’ll get into what a CCDiscardableImage in a bit.</p>
+<h3 id="Instantiating-the-images"><a href="#Instantiating-the-images" class="headerlink" title="Instantiating the images"></a>Instantiating the images</h3><p>We need to use <code>UIImage imageWithContentsOfFile:</code> to avoid the pitfalls of <code>UIImage imageNamed:</code>. Namely, don’t let the OS do the caching for us. We want to fully control how we cache our images, specifically, already decompressed and tinted, so when we’re on the main queue, it’s only a matter of rendering a pre-processed image.</p>
+<pre>`+ (CCDiscardableImage *)decompressedImageForPath:(NSString *)path size:(CGSize)size tintable:(BOOL)tintable {
+    UIImage *image = [UIImage imageWithContentsOfFile:path];
+    return [self decompressedImage:image forSize:[self screenScaledSize:size] tintable:tintable];
+}
+
++ (CGSize)screenScaledSize:(CGSize)size {
+    CGFloat scale = [UIScreen mainScreen].scale;
+    return CGSizeMake(size.width*scale, size.height*scale);
+}
+
++ (CCDiscardableImage *)decompressedImage:(UIImage *)image forSize:(CGSize)size tintable:(BOOL)tintable {
+    UIGraphicsBeginImageContext(size);
+    [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
+    image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    if (tintable) {
+        image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    }
+
+    return [[CCDiscardableImage alloc] initWithImage:image];
+}
+`</pre>
+
+<p>For us to store a fully decompressed image in the cache, which is what will help our performance, we need to provide the size at which it will be rendered at which is done by rendering it to a UIGraphicsImageContext and snapping an image from that.</p>
+<h3 id="CCDiscardableImage-NSPurgeableData"><a href="#CCDiscardableImage-NSPurgeableData" class="headerlink" title="CCDiscardableImage: NSPurgeableData"></a>CCDiscardableImage: NSPurgeableData</h3><p>NSPurgeableData from the horse’s mouth:</p>
+<blockquote>
+<p>You should use the NSPurgeableData class when you have objects with bytes that can be discarded when no longer needed.</p>
+</blockquote>
+<p>You might be wondering why we’d need to do this since NSCache already manages itself. Well, it does, but in my testing, it doesn’t behave optimally. If we used NSCache directly with UIImages, the cache would fill up. But if I backgrounded the app, and then foregrounded it again, the cache would be empty and have fill up again. To avoid this, I wrapped the images in NSPurgeableData:</p>
+<pre>`#import &lt;UIKit/UIKit.h&gt;
+
+@interface CCDiscardableImage : NSPurgeableData
+@property (readonly, strong, nonatomic) UIImage *image;
+- (instancetype)initWithImage:(UIImage *)image;
+@end
+#import "CCDiscardableImage.h"
+
+@interface CCDiscardableImage()
+@property (strong, nonatomic) UIImage *image;
+@end
+
+@implementation CCDiscardableImage
+- (instancetype)initWithImage:(UIImage *)image {
+    if (self = [super init]) {
+        _image = image;
+    }
+    return self;
+}
+@end
+`</pre>
+
+<h3 id="Using-the-image"><a href="#Using-the-image" class="headerlink" title="Using the image"></a>Using the image</h3><p>I try to get the image from the cache first. If it’s not there, I go through the same process as before to create it.</p>
+<p><pre>`- (UICollectionViewCell <em>)collectionView:(UICollectionView </em>)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {</pre></p>
+<pre><code>NSString *reuseIdentifier = NSStringFromClass([CCCueCell class]);
+CCCueCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
+CCSystemCue *cue = self.cues[indexPath.item];
+
+NSString *key = [cue thumbnailCacheKey];
+BOOL isSelected = [self isSelectedIndexPath:indexPath];
+CCDiscardableImage *cachedDiscardable = [self.cueImageCache objectForKey:key];
+if (cachedDiscardable) {
+    [cell configureWithImage:cachedDiscardable.image isSelected:isSelected];
+    return cell;
+}
+
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+    CCDiscardableImage *newDiscardable = [CCHelper decompressedImageForPath:[cue imagePath] size:[cue thumbnailSize] tintable:[cue tintable]];
+    [self.cueImageCache setObject:newDiscardable forKey:key];
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([self isVisibleIndexPath:indexPath]) {
+            [cell configureWithImage:newDiscardable.image isSelected:isSelected];
+        }
+    });
+});
+
+return cell;
+</code></pre><p>}</p>
+<ul>
+<li>(void)configureWithImage:(UIImage *)image isSelected:(BOOL)isSelected {<br>  self.imageView.image = image;<br>  isSelected ? [self addBorder] : [self removeBorder];<br>}</li>
+</ul>
+</li>
+</ol>
+<p>If we need to create the image, we do that in the background again to not lock up the UI. But remember, we need to actually <em>render</em> the image on the main queue, otherwise, the rendering will be delayed. Also, the we really only need to render the image if the cell is still visible on the screen. If the user is scrolling super fast, the cell might be hidden at this point in time, in which case, no need to render it. A simple additional optimization.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>The resulting implementation worked out well. There was zero scroll lag because all the heavy lifting was now done in the background. And this was because we were able to cache fully decompressed images by not using <code>UIImage imageNamed:</code>. The worse case scenario was if the user was very speedy by opening the library view and immediately scrolling down fast. This would result in some cells appearing blank for a fraction of a second. But the scrolling would remain liquid smooth. I hope this post or perhaps one bit of it was helpful for you.</p>
+<p>Happy exploring!</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://sundeepgupta.github.io/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/" data-id="ciz9bbsx300113fysm7p1o2mq" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ios/">ios</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/performance/">performance</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/01/17/strategy-pattern-done-functional-programming/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Strategy pattern done with Functional Programming
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/01/03/designing-truly-balanced-life-possible/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Designing a truly balanced life - is it possible?</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Uncategorized/">Uncategorized</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/books/">books</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/business/">business</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/career/">career</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/coding/">coding</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/consulting/">consulting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/craftsmanship/">craftsmanship</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/culture/">culture</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/design-patterns/">design patterns</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/fun/">fun</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pair-programming/">pair programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance/">performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/source-control/">source control</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swift/">swift</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/testing/">testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/writing/">writing</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/books/" style="font-size: 10px;">books</a> <a href="/tags/business/" style="font-size: 14px;">business</a> <a href="/tags/career/" style="font-size: 12px;">career</a> <a href="/tags/coding/" style="font-size: 18px;">coding</a> <a href="/tags/consulting/" style="font-size: 14px;">consulting</a> <a href="/tags/craftsmanship/" style="font-size: 16px;">craftsmanship</a> <a href="/tags/culture/" style="font-size: 14px;">culture</a> <a href="/tags/design-patterns/" style="font-size: 14px;">design patterns</a> <a href="/tags/fun/" style="font-size: 10px;">fun</a> <a href="/tags/functional-programming/" style="font-size: 10px;">functional programming</a> <a href="/tags/ios/" style="font-size: 20px;">ios</a> <a href="/tags/pair-programming/" style="font-size: 10px;">pair programming</a> <a href="/tags/performance/" style="font-size: 10px;">performance</a> <a href="/tags/source-control/" style="font-size: 10px;">source control</a> <a href="/tags/swift/" style="font-size: 14px;">swift</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a> <a href="/tags/writing/" style="font-size: 10px;">writing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">February 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">March 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">January 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/07/">July 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/06/">June 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/05/">May 2013</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/02/16/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2017/02/16/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/">Handling web view requests using the Chain of Responsibility pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/17/strategy-pattern-done-functional-programming/">Strategy pattern done with Functional Programming</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/">Liquid smooth iOS collection view scrolling with lots of images</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Sundeep Gupta<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

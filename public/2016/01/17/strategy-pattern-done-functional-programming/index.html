@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Strategy pattern done with Functional Programming | Sundeep Gupta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="A quick, simple technique to help transition your Object Oriented code to a more functional style.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Strategy pattern done with Functional Programming">
+<meta property="og:url" content="http://sundeepgupta.github.io/2016/01/17/strategy-pattern-done-functional-programming/index.html">
+<meta property="og:site_name" content="Sundeep Gupta">
+<meta property="og:description" content="A quick, simple technique to help transition your Object Oriented code to a more functional style.">
+<meta property="og:updated_time" content="2017-02-17T04:25:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Strategy pattern done with Functional Programming">
+<meta name="twitter:description" content="A quick, simple technique to help transition your Object Oriented code to a more functional style.">
+  
+    <link rel="alternate" href="/atom.xml" title="Sundeep Gupta" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Sundeep Gupta</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">iOS Software Crafter, Toronto</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://sundeepgupta.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-strategy-pattern-done-functional-programming" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/17/strategy-pattern-done-functional-programming/" class="article-date">
+  <time datetime="2016-01-18T02:51:00.000Z" itemprop="datePublished">2016-01-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Uncategorized/">Uncategorized</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Strategy pattern done with Functional Programming
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>A quick, simple technique to help transition your Object Oriented code to a more functional style.</p>
+<a id="more"></a>
+<h2 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h2><p>Showers are a mysterious place where for some reason, insights appear. I made a mini break through with the practice of Functional Programming (FP) in the shower. In hindsight, it’s not groundbreaking, but I think it’s worth discussing, especially if you’re struggling to grasp how FP can be used in practice.</p>
+<p>A while back, a functional approach nicely solved a problem I was having, where I was going to implement some type of interface with a set of concrete classes, but then realized a function would be easier and cleaner. So, I’m calling this out as a technique.</p>
+<blockquote>
+<p>FP can be used in place of the common Object Oriented practice of <a href="http://stackoverflow.com/questions/383947/what-does-it-mean-to-program-to-an-interface" target="_blank" rel="external">programming to interfaces, not implementations.</a></p>
+</blockquote>
+<p>I don’t know yet if this is true in general, but it’s certainly true for the Strategy Pattern. I’ll use my previous post, <a href="http://sundeepgupta.ca/dependency-injection-example-in-swift/" target="_blank" rel="external">Dependency injection example in Swift</a> to illustrate this.</p>
+<h2 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h2><p>The Swift Playground for this post can be found in <a href="https://github.com/sundeepgupta/functional-strategy-pattern" target="_blank" rel="external">this repo</a> if you’d like to download it.</p>
+<h2 id="Object-Oriented-example"><a href="#Object-Oriented-example" class="headerlink" title="Object Oriented example"></a>Object Oriented example</h2><p>First, let’s review the OO example. This was inspired by a Sandi Metz Ruby exercise I experienced a while back, and ported to Swift to illustrate what exactly Dependency Injection is and how it can be useful. The technique described in the post is more precisely known as the <a href="https://en.wikipedia.org/wiki/Strategy_pattern" target="_blank" rel="external">Strategy Pattern</a>.</p>
+<p>Quickly, the <code>Song</code> class has a <code>recite()</code> method to sing a short song consisting of an array of phrases. Using the Strategy Pattern, we can instantiate and recite the song, but remixed in a certain way, at runtime. To do this, we to pass in an object that conforms to the <code>Remixer</code> protocol (in other OO languages, like Java, a protocol is called an interface). In the example, we implement <code>Repeater</code> and <code>Reverser</code> to recite the song with repeated phrases and reversed phrases, respectively.</p>
+<pre><code>class Song {
+    private let lineStart = &quot;This is &quot;
+    private let lineEnd = &quot;.&quot;
+    private var phrases = [
+        &quot;the house that Jack built&quot;,
+        &quot;the malt that lay in&quot;,
+        &quot;the rat that ate&quot;
+    ]
+
+    init(remixer: Remixer?) {
+        if remixer != nil {
+            self.phrases = remixer!.result(self.phrases)
+        }
+    }
+
+    func line(number: Int) -&amp;gt; String {
+        let linePhrases = self.phrases[0...number-1].reverse()
+        let line = linePhrases.joinWithSeparator(&quot; &quot;)
+        return self.lineStart + line + self.lineEnd
+    }
+
+    func recite() -&amp;gt; String {
+        var lines = [String]()
+        for i in 1...self.phrases.count {
+            lines.append(self.line(i))
+        }
+        return lines.joinWithSeparator(&quot;\n&quot;)
+    }
+}
+
+protocol Remixer {
+    func result(list: [String]) -&amp;gt; [String]
+}
+
+class Repeater: Remixer {
+    func result(list: [String]) -&amp;gt; [String] {
+        return list.map {
+            return $0 + &quot; &quot; + $0
+        }
+    }
+}
+
+class Reverser: Remixer {
+    func result(list: [String]) -&amp;gt; [String] {
+        return list.reverse()
+    }
+}
+
+Song(remixer: nil).recite()
+Song(remixer: Repeater()).recite()
+Song(remixer: Reverser()).recite()
+`&lt;/pre&gt;
+
+## Functional example
+
+In the OO example, above, `Song` uses the `Remixer` protocol defined method `result()` on the object being passed in. Now, instead of passing in an object, which conforms to the `Remixer` protocol, which implements `result()`, in a sense, we&apos;ll pass in the `result()` _function_ directly. Easy, right? Let&apos;s look at the code.
+
+&lt;pre&gt;`class Song {
+    private let lineStart = &quot;This is &quot;
+    private let lineEnd = &quot;.&quot;
+    private var phrases = [
+        &quot;the house that Jack built&quot;,
+        &quot;the malt that lay in&quot;,
+        &quot;the rat that ate&quot;
+    ]
+
+    init(remixer: Remixer?) {
+        guard let r = remixer else { return }
+
+        self.phrases = r(phrases)
+    }
+
+    func line(number: Int) -&amp;gt; String {
+        let linePhrases = self.phrases[0...number-1].reverse()
+        let line = linePhrases.joinWithSeparator(&quot; &quot;)
+        return self.lineStart + line + self.lineEnd
+    }
+
+    func recite() -&amp;gt; String {
+        var lines = [String]()
+        for i in 1...self.phrases.count {
+            lines.append(self.line(i))
+        }
+        return lines.joinWithSeparator(&quot;\n&quot;)
+    }
+}
+
+typealias Remixer = [String] -&amp;gt; [String]
+
+let repeater: Remixer = { lines in
+    return lines.map {
+        return $0 + &quot; &quot; + $0
+    }
+}
+
+let reverser: Remixer = { lines in
+    return lines.reverse()
+}
+
+Song(remixer: nil).recite()
+Song(remixer: repeater).recite()
+Song(remixer: reverser).recite()
+</code></pre><p><code>Song</code> looks identical to the OO version except for inside <code>init()</code>. <code>init()</code> still takes a parameter of type <code>Remixer?</code>, but now, <code>Remixer</code>‘s type is a function, not a protocol. In place of our concrete classes which implemented the dynamic behaviour in <code>result()</code>, we define constants of type <code>Remixer</code>, our function type.</p>
+<p>If you have dynamic behaviour in your OO code and you’re looking to introduce FP into your practice, this is one approach that can help you get into the swing of it.</p>
+<p>Happy exploring!</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://sundeepgupta.github.io/2016/01/17/strategy-pattern-done-functional-programming/" data-id="ciz9bbsx800183fys4azewa3h" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/coding/">coding</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/design-patterns/">design patterns</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/swift/">swift</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Handling web view requests using the Chain of Responsibility pattern
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Liquid smooth iOS collection view scrolling with lots of images</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Uncategorized/">Uncategorized</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/books/">books</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/business/">business</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/career/">career</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/coding/">coding</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/consulting/">consulting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/craftsmanship/">craftsmanship</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/culture/">culture</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/design-patterns/">design patterns</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/fun/">fun</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pair-programming/">pair programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance/">performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/source-control/">source control</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swift/">swift</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/testing/">testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/writing/">writing</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/books/" style="font-size: 10px;">books</a> <a href="/tags/business/" style="font-size: 14px;">business</a> <a href="/tags/career/" style="font-size: 12px;">career</a> <a href="/tags/coding/" style="font-size: 18px;">coding</a> <a href="/tags/consulting/" style="font-size: 14px;">consulting</a> <a href="/tags/craftsmanship/" style="font-size: 16px;">craftsmanship</a> <a href="/tags/culture/" style="font-size: 14px;">culture</a> <a href="/tags/design-patterns/" style="font-size: 14px;">design patterns</a> <a href="/tags/fun/" style="font-size: 10px;">fun</a> <a href="/tags/functional-programming/" style="font-size: 10px;">functional programming</a> <a href="/tags/ios/" style="font-size: 20px;">ios</a> <a href="/tags/pair-programming/" style="font-size: 10px;">pair programming</a> <a href="/tags/performance/" style="font-size: 10px;">performance</a> <a href="/tags/source-control/" style="font-size: 10px;">source control</a> <a href="/tags/swift/" style="font-size: 14px;">swift</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a> <a href="/tags/writing/" style="font-size: 10px;">writing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">February 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">March 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">January 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/07/">July 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/06/">June 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/05/">May 2013</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/02/16/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2017/02/16/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/">Handling web view requests using the Chain of Responsibility pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/17/strategy-pattern-done-functional-programming/">Strategy pattern done with Functional Programming</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/">Liquid smooth iOS collection view scrolling with lots of images</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Sundeep Gupta<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

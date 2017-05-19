@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Handling web view requests using the Chain of Responsibility pattern | Sundeep Gupta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="A real world application of the Chain of Responsibility pattern to help handling web requests inside of an iOS web view.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Handling web view requests using the Chain of Responsibility pattern">
+<meta property="og:url" content="http://sundeepgupta.github.io/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/index.html">
+<meta property="og:site_name" content="Sundeep Gupta">
+<meta property="og:description" content="A real world application of the Chain of Responsibility pattern to help handling web requests inside of an iOS web view.">
+<meta property="og:updated_time" content="2017-02-17T04:25:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Handling web view requests using the Chain of Responsibility pattern">
+<meta name="twitter:description" content="A real world application of the Chain of Responsibility pattern to help handling web requests inside of an iOS web view.">
+  
+    <link rel="alternate" href="/atom.xml" title="Sundeep Gupta" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Sundeep Gupta</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">iOS Software Crafter, Toronto</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://sundeepgupta.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-handling-web-view-requests-using-the-chain-of-responsibility-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/" class="article-date">
+  <time datetime="2016-01-25T02:57:22.000Z" itemprop="datePublished">2016-01-24</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Uncategorized/">Uncategorized</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Handling web view requests using the Chain of Responsibility pattern
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>A real world application of the Chain of Responsibility pattern to help handling web requests inside of an iOS web view.</p>
+<a id="more"></a>
+<p><a href="http://influitive.io/news/2016/01/19/chain-of-responsibility-for-web-requests.html" target="_blank" rel="external">Originally published on my company’s site</a>.</p>
+<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>We describe the application of the Chain of Responsibility pattern to help with handling web requests inside of an iOS web view. We start with some background and context around the problem, then move to implement the technique to resolve it. The example is done in the Swift language.</p>
+<h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><p>Our iOS native app contains a web view to allow users to interact with a complex web app. In this simplified example, we will have a view controller, <code>WebViewController</code>, which has the UIWebView property called <code>webView</code>. We assign <code>webView</code>‘s <code>WKNavigationDelegate</code> to <code>WebViewController</code>. <code>WKNavigationDelegate</code> is used to  handle any HTTP requests <code>webView</code> makes.</p>
+<pre><code>import UIKit
+import WebKit
+
+class WebViewController: UIViewController, WKNavigationDelegate {
+    var webView: WKWebView!
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        self.setupWebView()
+    }
+
+    func logout() {
+        // code to log out
+    }
+
+    func showAboutView() {
+        // code to show the About view
+    }
+
+    func webView(webView: WKWebView, decidePolicyForNavigationAction navigationAction: WKNavigationAction, decisionHandler: (WKNavigationActionPolicy) -&amp;gt; Void) {
+        let path = navigationAction.request.URL!.path
+        if path == &quot;sign_out&quot; {
+            // code to handle logging out
+            decisionHandler(.Cancel)
+            return
+        } else if path == &quot;about&quot; {
+            // code to show a native About view
+
+            decisionHandler(.Cancel)
+            return
+        }
+
+        decisionHandler(.Allow)
+    }
+
+    private func setupWebView() {
+        self.webView = WKWebView(frame: self.view.frame)
+        self.webView.navigationDelegate = self
+        self.view.addSubview(webView)
+    }
+}
+`&lt;/pre&gt;
+
+You can see in the delegate method `webView:decidePolicyForNavigationAction:decisionHandler`, there is some conditional code to handle the request and we either allow the web view to continue processing it, or we stop it.
+
+### Problem
+
+Handling requests in this way poses a problem when there are more then just a couple. As development continues and more cases arise, it&apos;s clear we&apos;ll need to solve this in a better way. It sounds like the perfect case for the object oriented Chain of Responsibility design pattern.
+
+## Chain of Responsibility pattern
+
+Quickly, the [Chain of Responsibility pattern](https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern) lets a request pass through multiple &quot;links&quot; of a chain. If a link handles the request, we&apos;re done and we bail. Otherwise, the request is passed to the next link in the chain.
+
+### Implementation
+
+In our example, we want to process each HTTP request by sending it through a chain of potential handlers. And once a handler handles the request (like showing the native About view) we clearly don&apos;t want or need the other handlers to do anything. We handled it, so stop processing the request. Lets start backwards by figuring out what we want our delegate method to look like:
+
+#### Client code
+
+&lt;pre&gt;`func webView(webView: WKWebView, decidePolicyForNavigationAction navigationAction: WKNavigationAction, decisionHandler: (WKNavigationActionPolicy) -&amp;gt; Void) {
+    let handled = self.requestChain.handle(request: navigationAction.request, controller: self)
+    if handled {
+        decisionHandler(.Cancel)
+    } else {
+        decisionHandler(.Allow)
+    }
+}
+`&lt;/pre&gt;
+
+A couple of things to note here. We&apos;ve introduced the chain object, `requestChain`, which has the `handle` method. We&apos;ll get into this object in a bit, but for now, notice we simply check to see if the chain handled the request or not. More precisely, if any of the handlers (links), that make up the chain, handled the request. If so, stop `webView` from handling the request.
+
+#### Chain code
+
+To implement the chain, we need three components:
+1\. The link protocol (also known as an interface in other languages, like Java).
+2\. The concrete link classes.
+3\. The chain class, which holds the links.
+
+##### Links
+
+&lt;pre&gt;`protocol RequestHandler {
+    func handle(request request: NSURLRequest, controller: WebViewController) -&amp;gt; Bool
+}
+`&lt;/pre&gt;
+
+Each handler in our chain will take a request, and possibly handle it. And it returns a Bool to indicate if it handled it or not. If you&apos;re wondering why we&apos;re passing the `controller` argument, it&apos;s because in this contrived example, we&apos;ll call methods on `controller` to handle requests. In general, you may want to pass in different objects, or a closure instead.
+
+Lets look at an example of a concrete class:
+
+&lt;pre&gt;`class logoutHandler: RequestHandler {
+    func handle(request request: NSURLRequest, controller: WebViewController) -&amp;gt; Bool {
+        if request.URL!.path == &quot;logout&quot; {
+            controller.logout()
+            return true
+        }
+
+        return false
+    }
+}
+`&lt;/pre&gt;
+
+The class implements the protocol&apos;s `handle` method, by inspecting the request and conditionally handling it. All concrete `RequestHandler` classes would behave in this similar way. Here&apos;s another:
+
+&lt;pre&gt;`class AboutHandler: RequestHandler {
+    func handle(request request: NSURLRequest, controller: WebViewController) -&amp;gt; Bool {
+        if request.URL!.path == &quot;about&quot; {
+            controller.showAboutView()
+            return true
+        }
+
+        return false
+    }
+}
+`&lt;/pre&gt;
+
+##### Chain
+
+Now that we know what our links look like, lets put them together in our chain class, `RequestChain`.
+
+&lt;pre&gt;`class RequestChain {
+    var handlers: [RequestHandler]!
+
+    init(handlers: [RequestHandler]) {
+        self.handlers = handlers
+    }
+
+    func handle(request request: NSURLRequest, controller: WebViewController) -&amp;gt; Bool {
+        for handler in self.handlers {
+            let handled = handler.handle(request: request, controller: controller)
+            if handled {
+                return true
+            }
+        }
+
+        return false
+    }
+}
+`&lt;/pre&gt;
+
+We initialize our `RequestChain` with an array of `RequestHandlers` so we can loop over them when we want to process a request. Obviously, this is a very basic implementation and we could make this more sophisticated with guards, ability to add and remove handlers, etc. Also, you may notice that the `handle` method signature, is exactly the same as the `RequestHandler` protocol&apos;s. This is a natural thing to do, but it doesn&apos;t have to be this way, depending on your preference and scenario. In the `handle` method, we traverse chain of links and return once one of them handles the request.
+
+#### Client code revised
+
+Now that we have our chain setup, we simply need to instantiate and hook everything up. Here&apos;s the final version of our `WebViewController`:
+
+&lt;pre&gt;`class WebViewController: UIViewController, WKNavigationDelegate {
+    var webView: WKWebView!
+    var requestChain: RequestChain!
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        self.setupWebView()
+        self.setupRequestChain()
+    }
+
+    func webView(webView: WKWebView, decidePolicyForNavigationAction navigationAction: WKNavigationAction, decisionHandler: (WKNavigationActionPolicy) -&amp;gt; Void) {
+        let handled = self.requestChain.handle(request: navigationAction.request, controller: self)
+        if handled {
+            decisionHandler(.Cancel)
+        } else {
+            decisionHandler(.Allow)
+        }
+    }
+
+    func logout() {
+        // code to log out
+    }
+
+    func showAboutView() {
+        // code to show the About view
+    }
+
+    private func setupWebView() {
+        self.webView = WKWebView(frame: self.view.frame)
+        self.webView.navigationDelegate = self
+        self.view.addSubview(webView)
+    }
+
+    private func setupRequestChain() {
+        let handlers: [RequestHandler] = [LogoutHandler(), AboutHandler()]
+        self.requestChain = RequestChain(handlers: handlers)
+    }
+}
+</code></pre><h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>The Chain of Responsibility pattern provides a clean, extendable way to handle HTTP requests from a web view. Need to handle requests in more ways?  No problem, just create new concrete <code>RequestHandler</code> classes, and add them into the chain. Our code is now <a href="https://en.wikipedia.org/wiki/Open/closed_principle" target="_blank" rel="external">open for extension, and closed for modification</a>.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://sundeepgupta.github.io/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/" data-id="ciz9bbswn000g3fysjfgoy5j7" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/coding/">coding</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/design-patterns/">design patterns</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/02/16/hello-world/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Hello World
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/01/17/strategy-pattern-done-functional-programming/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Strategy pattern done with Functional Programming</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Uncategorized/">Uncategorized</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/books/">books</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/business/">business</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/career/">career</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/coding/">coding</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/consulting/">consulting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/craftsmanship/">craftsmanship</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/culture/">culture</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/design-patterns/">design patterns</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/fun/">fun</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pair-programming/">pair programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance/">performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/source-control/">source control</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swift/">swift</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/testing/">testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/writing/">writing</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/books/" style="font-size: 10px;">books</a> <a href="/tags/business/" style="font-size: 14px;">business</a> <a href="/tags/career/" style="font-size: 12px;">career</a> <a href="/tags/coding/" style="font-size: 18px;">coding</a> <a href="/tags/consulting/" style="font-size: 14px;">consulting</a> <a href="/tags/craftsmanship/" style="font-size: 16px;">craftsmanship</a> <a href="/tags/culture/" style="font-size: 14px;">culture</a> <a href="/tags/design-patterns/" style="font-size: 14px;">design patterns</a> <a href="/tags/fun/" style="font-size: 10px;">fun</a> <a href="/tags/functional-programming/" style="font-size: 10px;">functional programming</a> <a href="/tags/ios/" style="font-size: 20px;">ios</a> <a href="/tags/pair-programming/" style="font-size: 10px;">pair programming</a> <a href="/tags/performance/" style="font-size: 10px;">performance</a> <a href="/tags/source-control/" style="font-size: 10px;">source control</a> <a href="/tags/swift/" style="font-size: 14px;">swift</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a> <a href="/tags/writing/" style="font-size: 10px;">writing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">February 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">March 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">January 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/07/">July 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/06/">June 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/05/">May 2013</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/02/16/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2017/02/16/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/">Handling web view requests using the Chain of Responsibility pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/17/strategy-pattern-done-functional-programming/">Strategy pattern done with Functional Programming</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/">Liquid smooth iOS collection view scrolling with lots of images</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Sundeep Gupta<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

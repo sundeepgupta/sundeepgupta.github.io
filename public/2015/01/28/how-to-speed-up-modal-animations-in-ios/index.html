@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>How to speed up modal animations in iOS | Sundeep Gupta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Apple doesn’t provide an easy way to speed up the animations for presenting modals. In this post, I describe a straightforward way to do this using the UIViewControllerAnimatedTransitioning and UIView">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to speed up modal animations in iOS">
+<meta property="og:url" content="http://sundeepgupta.github.io/2015/01/28/how-to-speed-up-modal-animations-in-ios/index.html">
+<meta property="og:site_name" content="Sundeep Gupta">
+<meta property="og:description" content="Apple doesn’t provide an easy way to speed up the animations for presenting modals. In this post, I describe a straightforward way to do this using the UIViewControllerAnimatedTransitioning and UIView">
+<meta property="og:updated_time" content="2017-02-17T04:25:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="How to speed up modal animations in iOS">
+<meta name="twitter:description" content="Apple doesn’t provide an easy way to speed up the animations for presenting modals. In this post, I describe a straightforward way to do this using the UIViewControllerAnimatedTransitioning and UIView">
+  
+    <link rel="alternate" href="/atom.xml" title="Sundeep Gupta" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Sundeep Gupta</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">iOS Software Crafter, Toronto</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://sundeepgupta.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-how-to-speed-up-modal-animations-in-ios" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/01/28/how-to-speed-up-modal-animations-in-ios/" class="article-date">
+  <time datetime="2015-01-29T02:26:20.000Z" itemprop="datePublished">2015-01-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Uncategorized/">Uncategorized</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      How to speed up modal animations in iOS
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Apple doesn’t provide an easy way to speed up the animations for presenting modals. In this post, I describe a straightforward way to do this using the <code>UIViewControllerAnimatedTransitioning</code> and <code>UIViewControllerAnimatedTransitioningDelegate</code> protocols.</p>
+<a id="more"></a>
+<h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>Recently, for an iOS project I was working on, I needed to speed up the modal animation and alter its duration curve to match a different custom animation somewhere else in the app. Unfortunately, the built-in modal segue or <code>presentViewController:animated:completion:</code> doesn’t provide any opportunity to modify the animation.</p>
+<p>My first thought was to get my custom animation to match Apple’s built-in modal animation behaviour. But how? It’s not published anywhere. I could brute force match it by trial and error, but then app would have a dependency on Apple. If Apple were to change their stock animation in the future, I’d run into the same problem.</p>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>It was clear that I needed to build my own modal animation so I could have full control without any dependencies. The solution uses the iOS 7+ custom animation protocols: <code>UIViewControllerAnimatedTransitioning</code> and <code>UIViewControllerAnimatedTransitioningDelegate</code>. There’s plenty of literature about how they work. If you’re interested in digging in, here is a good point: <a href="http://www.objc.io/issue-5/view-controller-transitions.html" target="_blank" rel="external">objc.io - View Controller Transitions</a>. At the bottom of that article, there are more links, including reference to the WWDC video.</p>
+<h3 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h3><p>From a birds eye, here is how things work:</p>
+<ul>
+<li>From the presenting view controller, initialize and configure the animator.</li>
+<li>Configure the modal and present/dismiss it with animation set to <code>YES</code>. If you don’t turn the animation on, the animator will not be used.*   Provide the animator to the <code>UIViewControllerTransitioningDelegate</code> delegate methods.</li>
+<li>In the animator, configure and animate your views.</li>
+</ul>
+<h4 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h4><p>Here is some code that illustrates how to do this. Note that I’ve left out the unrelated bits.</p>
+<h5 id="Presenting-View-Controller"><a href="#Presenting-View-Controller" class="headerlink" title="Presenting View Controller"></a>Presenting View Controller</h5><pre><code>// PresentingViewController.m
+
+#import &quot;ModalAnimator.h&quot;
+
+@interface PresentingViewController () &amp;lt;UIViewControllerTransitioningDelegate&amp;gt;
+@property (strong, nonatomic) ModalAnimator *modalAnimator;
+@end
+
+@implementation PresentingViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.modalAnimator = [ModalAnimator new];
+}
+
+// Storyboard &quot;Present Modally&quot; seque with &quot;Animates&quot; turned on.
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    UIViewController *viewController = segue.destinationViewController;    
+    viewController.modalPresentationStyle = UIModalPresentationCustom;
+    viewController.transitioningDelegate = self;
+}
+
+#pragma mark - UIViewControllerTransitioningDelegate methods
+- (id&amp;lt;UIViewControllerAnimatedTransitioning&amp;gt;)animationControllerForPresentedController:(UIViewController *)presented presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source {
+    [self.modalAnimator shouldPresent];
+    return self.modalAnimator;
+}
+
+- (id&amp;lt;UIViewControllerAnimatedTransitioning&amp;gt;)animationControllerForDismissedController:(UIViewController *)dismissed {
+    [self.modalAnimator shouldDismiss];
+    return self.modalAnimator;
+}
+
+@end
+`&lt;/pre&gt;
+
+Here you can see the general flow. In this example, a storyboard segue is used to present the modal. Here is how the segue is configured in the storyboard:
+
+![modal segue settings](http://i.imgur.com/Gohw9gX.png)
+
+Alternatively, it could have been presented in code like so:
+
+&lt;pre&gt;`viewController.modalPresentationStyle = UIModalPresentationCustom;
+viewController.transitioningDelegate = self;
+[self presentViewController:viewController animated:YES completion:nil];
+`&lt;/pre&gt;
+
+##### Custom Animator
+
+&lt;pre&gt;`// ModalAnimator.h
+
+@interface ModalAnimator : NSObject &amp;lt;UIViewControllerAnimatedTransitioning&amp;gt;
+- (void)shouldPresent;
+- (void)shouldDismiss;
+@end
+`&lt;/pre&gt;
+
+The public interface is very simple. Only a couple of configuration setters to let the animator know if we should be using the present or the dismiss animation. As seen above in the `PresentingViewController.m` code, these get called in the `UIViewControllerTransitioningDelegate` methods.
+
+&lt;pre&gt;`// ModalAnimator.m
+
+@interface ModalAnimator ()
+@property (nonatomic) BOOL isPresenting;
+@end
+
+@implementation ModalAnimator
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.isPresenting = YES;
+    }
+    return self;
+}
+
+- (void)shouldPresent {
+    self.isPresenting = YES;
+}
+
+- (void)shouldDismiss {
+    self.isPresenting = NO;
+}
+
+#pragma mark - UIViewControllerAnimatedTransitioning methods
+- (NSTimeInterval)transitionDuration:(id&amp;lt;UIViewControllerContextTransitioning&amp;gt;)transitionContext {
+    return 0.2;
+}
+
+- (void)animateTransition:(id&amp;lt;UIViewControllerContextTransitioning&amp;gt;)transitionContext {
+    UIViewController *fromVc = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    UIViewController *toVc = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    UIView *fromView = fromVc.view;
+    UIView *toView = toVc.view;
+    UIView *containerView = transitionContext.containerView;
+    NSTimeInterval duration = [self transitionDuration:transitionContext];
+
+    if (self.isPresenting) {
+        UIViewController *topFromVc = [self topViewControllerForViewController:fromVc];
+        [topFromVc viewWillDisappear:YES];
+        fromView.userInteractionEnabled = NO;
+        [containerView addSubview:toView];
+
+        // Setup animating the view from the bottom of the screen. 
+        CGRect originalFrame = toView.frame;
+        CGRect hiddenFrame = CGRectMake(originalFrame.origin.x, originalFrame.size.height, originalFrame.size.width, originalFrame.size.height);
+        toView.frame = hiddenFrame;
+
+        [UIView animateWithDuration:duration animations: ^{
+            toView.frame = originalFrame;
+        } completion: ^(BOOL finished) {
+            [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
+            [topFromVc viewDidDisappear:YES];
+        }];
+    } else {
+        UIViewController *topToVc = [self topViewControllerForViewController:toVc];
+        [topToVc viewWillAppear:YES];
+
+        CGRect hiddenFrame = CGRectMake(fromView.frame.origin.x, fromView.frame.size.height, fromView.frame.size.width, fromView.frame.size.height);
+
+        [UIView animateWithDuration:duration animations: ^{
+            fromView.frame = hiddenFrame;
+        } completion: ^(BOOL finished) {
+            [fromView removeFromSuperview];
+            toView.userInteractionEnabled = YES;
+            [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
+            [topToVc viewDidAppear:YES];
+        }];
+    }
+}
+
+#pragma mark - Private methods
+- (UIViewController *)topViewControllerForViewController:(UIViewController *)viewController {
+    if ([viewController isKindOfClass:[UINavigationController class]]) {
+        UINavigationController *navigationController = (UINavigationController *)viewController;
+        return navigationController.topViewController;
+    } else {
+        return viewController;
+    }
+}
+
+@end
+</code></pre><p>The animator essentially implements two delegate methods which describe the animation and its duration. A couple of things to take note of:</p>
+<ol>
+<li><p>To preserve the way the default modal presentation works, manually call view lifecycle methods.</p>
+</li>
+<li><p>The private method <code>topViewControllerForViewController:</code> is here to ensure that the view life cycle methods are called on the correct view controller.</p>
+</li>
+</ol>
+<h2 id="Wrap-Up"><a href="#Wrap-Up" class="headerlink" title="Wrap-Up"></a>Wrap-Up</h2><p>I ended up using this modal animator in a few places in my app, and now it looks and feels consistent. If this has helped you or have different or better ways to speed up modal animations in iOS, feel free to comment.</p>
+<p>Happy exploring!</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://sundeepgupta.github.io/2015/01/28/how-to-speed-up-modal-animations-in-ios/" data-id="ciz9bbswr000l3fysvtqnv9ct" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ios/">ios</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/02/15/making-sure-you-get-paid-by-your-clients/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Making sure you get paid by your clients
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/01/17/writing-great-git-commit-messages/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Writing Great Git Commit Messages</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Uncategorized/">Uncategorized</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/books/">books</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/business/">business</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/career/">career</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/coding/">coding</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/consulting/">consulting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/craftsmanship/">craftsmanship</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/culture/">culture</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/design-patterns/">design patterns</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/fun/">fun</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pair-programming/">pair programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance/">performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/source-control/">source control</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swift/">swift</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/testing/">testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/writing/">writing</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/books/" style="font-size: 10px;">books</a> <a href="/tags/business/" style="font-size: 14px;">business</a> <a href="/tags/career/" style="font-size: 12px;">career</a> <a href="/tags/coding/" style="font-size: 18px;">coding</a> <a href="/tags/consulting/" style="font-size: 14px;">consulting</a> <a href="/tags/craftsmanship/" style="font-size: 16px;">craftsmanship</a> <a href="/tags/culture/" style="font-size: 14px;">culture</a> <a href="/tags/design-patterns/" style="font-size: 14px;">design patterns</a> <a href="/tags/fun/" style="font-size: 10px;">fun</a> <a href="/tags/functional-programming/" style="font-size: 10px;">functional programming</a> <a href="/tags/ios/" style="font-size: 20px;">ios</a> <a href="/tags/pair-programming/" style="font-size: 10px;">pair programming</a> <a href="/tags/performance/" style="font-size: 10px;">performance</a> <a href="/tags/source-control/" style="font-size: 10px;">source control</a> <a href="/tags/swift/" style="font-size: 14px;">swift</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a> <a href="/tags/writing/" style="font-size: 10px;">writing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">February 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">March 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">January 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/07/">July 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/06/">June 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/05/">May 2013</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/02/16/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2017/02/16/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/">Handling web view requests using the Chain of Responsibility pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/17/strategy-pattern-done-functional-programming/">Strategy pattern done with Functional Programming</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/">Liquid smooth iOS collection view scrolling with lots of images</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Sundeep Gupta<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>iOS Core Data Concurrency Example | Sundeep Gupta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="An iOS Core Data concurrency example showing how one data store can be hot swapped with another while performing read and write operations.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS Core Data Concurrency Example">
+<meta property="og:url" content="http://sundeepgupta.github.io/2013/07/07/ios-core-data-concurrency-example/index.html">
+<meta property="og:site_name" content="Sundeep Gupta">
+<meta property="og:description" content="An iOS Core Data concurrency example showing how one data store can be hot swapped with another while performing read and write operations.">
+<meta property="og:image" content="http://content.screencast.com/users/SundeepG/folders/Do%20not%20delete/media/00a4880a-0c07-4435-bc95-78c84afb038b/00000336.png">
+<meta property="og:updated_time" content="2017-02-17T04:25:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS Core Data Concurrency Example">
+<meta name="twitter:description" content="An iOS Core Data concurrency example showing how one data store can be hot swapped with another while performing read and write operations.">
+<meta name="twitter:image" content="http://content.screencast.com/users/SundeepG/folders/Do%20not%20delete/media/00a4880a-0c07-4435-bc95-78c84afb038b/00000336.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Sundeep Gupta" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Sundeep Gupta</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">iOS Software Crafter, Toronto</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://sundeepgupta.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-ios-core-data-concurrency-example" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/07/07/ios-core-data-concurrency-example/" class="article-date">
+  <time datetime="2013-07-08T01:29:25.000Z" itemprop="datePublished">2013-07-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Uncategorized/">Uncategorized</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      iOS Core Data Concurrency Example
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>An iOS Core Data concurrency example showing how one data store can be hot swapped with another while performing read and write operations.</p>
+<a id="more"></a>
+<p>I’m working on a project that requires downloading a JSON data feed from a web server to update local data on an iOS device using a Core Data persistent store.</p>
+<h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><ol>
+<li>The data is not indexed by anything. Thus, I could not <em>update</em> the local objects directly. I had to do a full data set replace, which meant deleting all the existing objects and create new objects on each sync.</li>
+<li><p>The data set was over 60,000 records and over 5MB. Saving to the local store via Core Data operations was locking up the UI.</p>
+</li>
+<li><p>The UI needed access to the old data while the new data was being downloaded and written to disk.</p>
+</li>
+</ol>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>I was aware of asynchronous <code>NSURLConnection</code> techniques for the download to free up the UI thread, but that wouldn’t help with the issue of UI locking when saving data to the local store. So, I dug deeper into Core Data and learned about its ability to handle concurrency, which was improved for iOS 5+.</p>
+<p>To summarize, the solution I went with was to create a new, temporary, background <code>NSManagedObjectContext</code> (MOC) for the new data. Once all the objects were written to the MOC, I “flipped the switch” by replacing the existing <code>NSPersistentStore</code> then saved the MOC. This allowed all the data downloading and saving to be done in the background and being able to do a full replace update without the UI ever knowing.</p>
+<p>I chose to do it this way because MOCs are cheap, and it is simpler to implement than other setups like nested MOCs. You can read more about that on <a href="http://floriankugler.com/blog/2013/4/2/the-concurrent-core-data-stack" target="_blank" rel="external">Florian Kugler’s blog</a>.</p>
+<h2 id="Implementation"><a href="#Implementation" class="headerlink" title="Implementation"></a>Implementation</h2><p>I won’t get into the asynchronous downloading because there are several resources online that teach it:</p>
+<ul>
+<li><a href="http://developer.apple.com/library/ios/#documentation/Cocoa/Conceptual/URLLoadingSystem/Tasks/UsingNSURLConnection.html#//apple_ref/doc/uid/20001836-BAJEAIEE" target="_blank" rel="external">Apple Documentation - Using NSURLConnection</a></li>
+<li><a href="http://codewithchris.com/tutorial-how-to-use-ios-nsurlconnection-by-example/" target="_blank" rel="external">Code With Chris - NSURLConnection By Example</a></li>
+</ul>
+<p>What I want to show is the actual Core Data code as I didn’t find any comprehensive examples online and Apple’s documentation on this topic is lacking.</p>
+<p>When I started the project, I checked off the Core Data option, which sets up the Core Data stack inside of your <strong>AppDelegate</strong> class.</p>
+<p><img src="http://content.screencast.com/users/SundeepG/folders/Do%20not%20delete/media/00a4880a-0c07-4435-bc95-78c84afb038b/00000336.png" alt=""></p>
+<p>After setting up my asynchronous <code>NSURLConnection</code>, in the delegate method, <code>connectionDidFinishLoading:connection</code>, this is where I was saving the data:</p>
+<pre><code>- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    //prepare the data into an array of objects
+    NSData *data = [self dataForConnection:connection];
+    NSArray *objects = [self parseData:data];
+
+    //setup tempMoc
+    UIApplication *app = [UIApplication sharedApplication];
+    AppDelegate *appDelegate = (AppDelegate *)app.delegate;
+    self.moc = appDelegate.managedObjectContext;
+    NSPersistentStoreCoordinator *storeCoordinator = self.moc.persistentStoreCoordinator;
+    NSManagedObjectContext *tempMoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    tempMoc.persistentStoreCoordinator = storeCoordinator;
+
+    NSString *entityName = NSStringFromClass([Compatibility class]);
+
+    //specify the thread for the callback after all the saving is finished
+    __block dispatch_queue_t currentQ =  dispatch_get_current_queue();
+
+    //save and do anything else for this particular MOC on a background thread inside the block
+    [self.tempMoc performBlock:^{        
+        for (NSDictionary *newObjectDict in objects) {
+            Compatibility *object = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.tempMoc];
+            object.prod1 = newObjectDict[@&quot;prod1&quot;];
+            object.prod2 = newObjectDict[@&quot;prod2&quot;];
+            object.result = newObjectDict[@&quot;result&quot;];
+        }
+
+        //after all the stuff in the block is done, execute this block on the thread specified
+        dispatch_sync(currentQ, ^(){
+            [tempMoc save:nil];
+
+            //flip the switch
+            [self.moc lock];
+            [self.moc reset];
+            NSPersistentStore *store = storeCoordinator.persistentStores.lastObject;
+            NSURL *storeUrl = store.URL;
+            [storeCoordinator removePersistentStore:store error:nil];
+            [[NSFileManager defaultManager] removeItemAtURL:store.URL error:nil];
+            [storeCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeUrl options:nil error:nil];
+            [self.moc unlock];
+            self.moc = tempMoc;
+            tempMoc = nil;
+        });
+    }];
+}
+</code></pre><p>Let’s go over the important parts here.</p>
+<p>When setting up your temporary MOC, to make sure to initialize it with <code>initWithConcurrencyType:NSPrivateQueueConcurrencyType</code> so it can open and manage its own background thread and queueing operations.</p>
+<p>To take advantage of this feature, you must use the asynchronous <code>peformBlock:</code> or synchronous <code>peformBlockAndWait:</code> methods. If you’re doing more complex things with your MOCs and <code>NSManagedObjects</code> within these blocks, pay attention to the documentation to ensure things don’t get messy. <a href="http://stackoverflow.com/a/2138332/1672161" target="_blank" rel="external">Here are some summary tips</a>.</p>
+<p>There is no built-in callback for these methods but there are several ways to go about it, I found best suited for my purposes the <code>dispatch_sync</code> method. Two others are described in the WWDC video mentioned at the bottom of this post if your needs are different.</p>
+<p>Flipping the switch requires getting the store and its URL, deleting the store, then creating a new store with the same URL. I learned this technique in <a href="http://stackoverflow.com/questions/1077810/delete-reset-all-entries-in-core-data" target="_blank" rel="external">this post</a>, and if you hook it up to a UIButton, its a convenient way to reset things while testing.</p>
+<p>Well, that’s it, I hope this was helpful.</p>
+<p>Oh, and if you’re working with multiple asynchronous NSURLConnections, I found <a href="http://stackoverflow.com/a/332483/1672161" target="_blank" rel="external">this post</a> to be very helpful.</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ul>
+<li>WWDC 2012 Session 214 - Core Data Best Practices</li>
+<li><a href="http://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/Reference/reference.html#//apple_ref/c/func/dispatch_sync" target="_blank" rel="external">Apple Documentation - Dispatch Sync</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://sundeepgupta.github.io/2013/07/07/ios-core-data-concurrency-example/" data-id="ciz9bbswv000s3fyskij14asu" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ios/">ios</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2014/01/22/ios-testing-tips-kiwi/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          iOS Testing Tips with Kiwi
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2013/06/20/how-to-sell-without-selling/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">How to Sell Without Selling</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Uncategorized/">Uncategorized</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/books/">books</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/business/">business</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/career/">career</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/coding/">coding</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/consulting/">consulting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/craftsmanship/">craftsmanship</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/culture/">culture</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/design-patterns/">design patterns</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/fun/">fun</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pair-programming/">pair programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance/">performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/source-control/">source control</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swift/">swift</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/testing/">testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/writing/">writing</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/books/" style="font-size: 10px;">books</a> <a href="/tags/business/" style="font-size: 14px;">business</a> <a href="/tags/career/" style="font-size: 12px;">career</a> <a href="/tags/coding/" style="font-size: 18px;">coding</a> <a href="/tags/consulting/" style="font-size: 14px;">consulting</a> <a href="/tags/craftsmanship/" style="font-size: 16px;">craftsmanship</a> <a href="/tags/culture/" style="font-size: 14px;">culture</a> <a href="/tags/design-patterns/" style="font-size: 14px;">design patterns</a> <a href="/tags/fun/" style="font-size: 10px;">fun</a> <a href="/tags/functional-programming/" style="font-size: 10px;">functional programming</a> <a href="/tags/ios/" style="font-size: 20px;">ios</a> <a href="/tags/pair-programming/" style="font-size: 10px;">pair programming</a> <a href="/tags/performance/" style="font-size: 10px;">performance</a> <a href="/tags/source-control/" style="font-size: 10px;">source control</a> <a href="/tags/swift/" style="font-size: 14px;">swift</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a> <a href="/tags/writing/" style="font-size: 10px;">writing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">February 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">March 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">January 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/07/">July 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/06/">June 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/05/">May 2013</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/02/16/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2017/02/16/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/">Handling web view requests using the Chain of Responsibility pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/17/strategy-pattern-done-functional-programming/">Strategy pattern done with Functional Programming</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/">Liquid smooth iOS collection view scrolling with lots of images</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Sundeep Gupta<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

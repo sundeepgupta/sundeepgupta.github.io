@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>iOS 8 Share Extension Example in Swift | Sundeep Gupta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="While trying to get an iOS 8 Share Extension working in the new Swift language, I ran into some issues due to lack of examples and incomplete documentation. My objective was to let the user share a we">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS 8 Share Extension Example in Swift">
+<meta property="og:url" content="http://sundeepgupta.github.io/2014/06/16/ios-8-share-extension-example-swift/index.html">
+<meta property="og:site_name" content="Sundeep Gupta">
+<meta property="og:description" content="While trying to get an iOS 8 Share Extension working in the new Swift language, I ran into some issues due to lack of examples and incomplete documentation. My objective was to let the user share a we">
+<meta property="og:updated_time" content="2017-02-17T04:25:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS 8 Share Extension Example in Swift">
+<meta name="twitter:description" content="While trying to get an iOS 8 Share Extension working in the new Swift language, I ran into some issues due to lack of examples and incomplete documentation. My objective was to let the user share a we">
+  
+    <link rel="alternate" href="/atom.xml" title="Sundeep Gupta" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Sundeep Gupta</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">iOS Software Crafter, Toronto</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://sundeepgupta.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-ios-8-share-extension-example-swift" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/06/16/ios-8-share-extension-example-swift/" class="article-date">
+  <time datetime="2014-06-17T01:41:10.000Z" itemprop="datePublished">2014-06-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Uncategorized/">Uncategorized</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      iOS 8 Share Extension Example in Swift
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>While trying to get an iOS 8 Share Extension working in the new Swift language, I ran into some issues due to lack of examples and incomplete documentation. My objective was to let the user share a web page URL with my own custom app. After struggling and digging, here is a working example.</p>
+<a id="more"></a>
+<h2 id="Setup"><a href="#Setup" class="headerlink" title="Setup"></a>Setup</h2><p>Create a new app extension target by going go File, New, Target in the Xcode menu, then in the left panel select Application Extension and select Share in the right pane. Next, you’ll need to name it, and then make sure it belongs to your correct project and embedded in your main target. Remember, app extensions must be distributed with your main app.</p>
+<p>Now run the app in Xcode, open a website in Safari and tap the Share icon on the bottom. The Action Sheet should appear and your app should be amongst the sharing options. If you tap on your app, a native share dialog should appear. If you have that working, then we’re good to move on.</p>
+<p>Xcode creates a target and a folder of files which you’ll see in the Project Navigator. If you inspect that folder you should see three files:</p>
+<ol>
+<li>ShareViewController.swift</li>
+<li>MainInterface.storyboard</li>
+<li>Supporting Files/Info.plist</li>
+</ol>
+<p>In this example, we’ll ignore the MainInterface.storyboard file as we’re more interested in simply getting the url from Safari to share.</p>
+<h2 id="Info-plist"><a href="#Info-plist" class="headerlink" title="Info.plist"></a>Info.plist</h2><p>First thing’s first, lets get our extension configured to share URLs by opening up the Info.plist file and making a few changes. If you right click on it in the Project Navigator, and select Open As, Source Code, we can it in its XML form. We need to change <code>NSExtensionActivationRule</code> to a dictionary and add <code>NSExtensionActivationSupportsWebURLWithMaxCount</code> as a Number with the value <code>1</code>. This lets the OS know that we’ll be looking for a web url in our controller. The final result of the <code>NSExtensionKey</code> node in the file should look like this:</p>
+<pre><code>&amp;lt;key&amp;gt;NSExtension&amp;lt;/key&amp;gt;
+&amp;lt;dict&amp;gt;
+    &amp;lt;key&amp;gt;NSExtensionAttributes&amp;lt;/key&amp;gt;
+    &amp;lt;dict&amp;gt;
+        &amp;lt;key&amp;gt;NSExtensionActivationRule&amp;lt;/key&amp;gt;
+        &amp;lt;dict&amp;gt;
+            &amp;lt;key&amp;gt;NSExtensionActivationSupportsWebURLWithMaxCount&amp;lt;/key&amp;gt;
+            &amp;lt;integer&amp;gt;1&amp;lt;/integer&amp;gt;
+        &amp;lt;/dict&amp;gt;
+        &amp;lt;key&amp;gt;NSExtensionPointName&amp;lt;/key&amp;gt;
+        &amp;lt;string&amp;gt;com.apple.share-services&amp;lt;/string&amp;gt;
+        &amp;lt;key&amp;gt;NSExtensionPointVersion&amp;lt;/key&amp;gt;
+        &amp;lt;string&amp;gt;1.0&amp;lt;/string&amp;gt;
+    &amp;lt;/dict&amp;gt;
+    &amp;lt;key&amp;gt;NSExtensionPointIdentifier&amp;lt;/key&amp;gt;
+    &amp;lt;string&amp;gt;com.apple.share-services&amp;lt;/string&amp;gt;
+    &amp;lt;key&amp;gt;NSExtensionMainStoryboard&amp;lt;/key&amp;gt;
+    &amp;lt;string&amp;gt;MainInterface&amp;lt;/string&amp;gt;
+&amp;lt;/dict&amp;gt;
+`&lt;/pre&gt;
+
+## Code
+
+Now that we&apos;re configured, lets get into the code and open up ShareViewController.swift. You&apos;ll see Xcode stubs out a few methods for us, but to keep this example focused, the only method I&apos;ll work in for this example is `didSelectPost`. This is a delegate method that gets called when the user taps the &quot;Post&quot; button in the share dialog. In here, we&apos;ll add the code needed to extract the url and user entered text for our share.
+
+&lt;pre&gt;`override func didSelectPost() {
+
+    //get the itemProvider which wraps the url we need
+    var item : NSExtensionItem = self.extensionContext.inputItems[0] as NSExtensionItem
+    var itemProvider : NSItemProvider = item.attachments[0] as NSItemProvider
+
+    //pull the URL out
+    if (itemProvider.hasItemConformingToTypeIdentifier(&quot;public.url&quot;)) {        
+        itemProvider.loadItemForTypeIdentifier(&quot;public.url&quot;, options: nil, completionHandler: { (urlItem, error) in
+            var urlString = urlItem.absoluteString
+            //do what you need to do now, such as send a request to your server with this url
+        })
+    }
+
+    //default stubbed out code which can pass data back to the host app.
+    self.extensionContext.completeRequestReturningItems(nil, completionHandler: nil)
+}
+</code></pre><p>Notice in the completion handler closure, there are no typed arguments. This is because Swift will automatically infer the argument type. If we try to type <code>urlItem</code> to NSURL, we’ll get compile errors, because that argument is inherently <code>NSSecureEncoding!</code>.</p>
+<p>And there you have it. Sharing a web url via your own app. I hope this example was helpful for you :)</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://sundeepgupta.github.io/2014/06/16/ios-8-share-extension-example-swift/" data-id="ciz9bbswt000o3fysrrifn82t" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ios/">ios</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/swift/">swift</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2014/12/10/ios-modal-call-sequence/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          iOS Modal Call Sequence
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2014/01/22/ios-testing-tips-kiwi/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">iOS Testing Tips with Kiwi</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Uncategorized/">Uncategorized</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/books/">books</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/business/">business</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/career/">career</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/coding/">coding</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/consulting/">consulting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/craftsmanship/">craftsmanship</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/culture/">culture</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/design-patterns/">design patterns</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/fun/">fun</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pair-programming/">pair programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance/">performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/source-control/">source control</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swift/">swift</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/testing/">testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/writing/">writing</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/books/" style="font-size: 10px;">books</a> <a href="/tags/business/" style="font-size: 14px;">business</a> <a href="/tags/career/" style="font-size: 12px;">career</a> <a href="/tags/coding/" style="font-size: 18px;">coding</a> <a href="/tags/consulting/" style="font-size: 14px;">consulting</a> <a href="/tags/craftsmanship/" style="font-size: 16px;">craftsmanship</a> <a href="/tags/culture/" style="font-size: 14px;">culture</a> <a href="/tags/design-patterns/" style="font-size: 14px;">design patterns</a> <a href="/tags/fun/" style="font-size: 10px;">fun</a> <a href="/tags/functional-programming/" style="font-size: 10px;">functional programming</a> <a href="/tags/ios/" style="font-size: 20px;">ios</a> <a href="/tags/pair-programming/" style="font-size: 10px;">pair programming</a> <a href="/tags/performance/" style="font-size: 10px;">performance</a> <a href="/tags/source-control/" style="font-size: 10px;">source control</a> <a href="/tags/swift/" style="font-size: 14px;">swift</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a> <a href="/tags/writing/" style="font-size: 10px;">writing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">February 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">March 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">January 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/07/">July 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/06/">June 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/05/">May 2013</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/02/16/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2017/02/16/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/">Handling web view requests using the Chain of Responsibility pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/17/strategy-pattern-done-functional-programming/">Strategy pattern done with Functional Programming</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/">Liquid smooth iOS collection view scrolling with lots of images</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Sundeep Gupta<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

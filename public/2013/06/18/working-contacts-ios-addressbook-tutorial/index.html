@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Working with Contacts, An iOS Addressbook Tutorial | Sundeep Gupta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="iOS’s Addressbook framework is quite handy for enhancing the user’s experience when your app requires any contact related data. In this iOS Addressbook tutorial, I detail how I use this framework in c">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Working with Contacts, An iOS Addressbook Tutorial">
+<meta property="og:url" content="http://sundeepgupta.github.io/2013/06/18/working-contacts-ios-addressbook-tutorial/index.html">
+<meta property="og:site_name" content="Sundeep Gupta">
+<meta property="og:description" content="iOS’s Addressbook framework is quite handy for enhancing the user’s experience when your app requires any contact related data. In this iOS Addressbook tutorial, I detail how I use this framework in c">
+<meta property="og:updated_time" content="2017-02-17T04:25:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Working with Contacts, An iOS Addressbook Tutorial">
+<meta name="twitter:description" content="iOS’s Addressbook framework is quite handy for enhancing the user’s experience when your app requires any contact related data. In this iOS Addressbook tutorial, I detail how I use this framework in c">
+  
+    <link rel="alternate" href="/atom.xml" title="Sundeep Gupta" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Sundeep Gupta</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">iOS Software Crafter, Toronto</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://sundeepgupta.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-working-contacts-ios-addressbook-tutorial" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/06/18/working-contacts-ios-addressbook-tutorial/" class="article-date">
+  <time datetime="2013-06-19T00:54:08.000Z" itemprop="datePublished">2013-06-18</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Uncategorized/">Uncategorized</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Working with Contacts, An iOS Addressbook Tutorial
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>iOS’s Addressbook framework is quite handy for enhancing the user’s experience when your app requires any contact related data. In this iOS Addressbook tutorial, I detail how I use this framework in conjunction with Core Data.</p>
+<a id="more"></a>
+<h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><p>This guide will explain how to:</p>
+<ul>
+<li>Show the address book picker.</li>
+<li>Store a reference to a contact.</li>
+<li>Retrieve a contact using a stored reference.</li>
+</ul>
+<p>It assumes prior knowledge of iOS programming and Core Data.</p>
+<p>I had to do this for a personal project I’m working on. I didn’t find any good guides, so I thought I’d write one.</p>
+<p>References:</p>
+<ul>
+<li><a href="http://developer.apple.com/library/ios/#documentation/ContactData/Conceptual/AddressBookProgrammingGuideforiPhone/Introduction.html" target="_blank" rel="external">Address Book Programming Guide for iOS</a></li>
+</ul>
+<h2 id="Show-the-address-book-picker"><a href="#Show-the-address-book-picker" class="headerlink" title="Show the address book picker"></a>Show the address book picker</h2><p>We must add <strong>AddressBook.framework</strong> and <strong>AddressBookUI.framework</strong> into our project. After doing this, import the <strong>AddressBookUI</strong> framework and add the appropriate protocols you require into your class’s .h file. For my purposes, I’m using the <strong>ABPeoplePickerNavigationControllerDelegate</strong> protocol.</p>
+<pre><code>//  ParticipantsVC.h
+
+#import &amp;lt;UIKit/UIKit.h&amp;gt;
+#import &amp;lt;AddressBookUI/AddressBookUI.h&amp;gt;
+
+@interface ParticipantsVC : UITableViewController &amp;lt;ABPeoplePickerNavigationControllerDelegate&amp;gt;
+
+@end
+`&lt;/pre&gt;
+
+Next, implement the required and optional methods defined by the protocol in the corresponding .m file. I&apos;ve added a bit of code already to prevent crashing.
+
+&lt;pre&gt;`- (BOOL)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker
+      shouldContinueAfterSelectingPerson:(ABRecordRef)person {
+    return NO;
+}
+
+- (BOOL)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker
+      shouldContinueAfterSelectingPerson:(ABRecordRef)person
+                                property:(ABPropertyID)property
+                              identifier:(ABMultiValueIdentifier)identifier {
+    return NO;
+}
+
+- (void)peoplePickerNavigationControllerDidCancel:(ABPeoplePickerNavigationController *)peoplePicker {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+`&lt;/pre&gt;
+
+Next, I setup a UI button press event to show the address book picker. We simply instantiate the picker object, set the picker&apos;s delegate property, and present it (modally).
+
+&lt;pre&gt;`- (IBAction)newButtonPress:(id)sender {
+    ABPeoplePickerNavigationController *peoplePicker = [[ABPeoplePickerNavigationController alloc] init];
+    peoplePicker.peoplePickerDelegate = self;
+
+    [self presentViewController:peoplePicker animated:YES completion:nil];
+}
+`&lt;/pre&gt;
+
+_No contacts?_ My simulator had an empty address book, so I added a few manually via the Contacts app. If you need to import a lot of contacts for testing, take a look at [this](http://stackoverflow.com/questions/901132/importing-addressbook-data-into-the-iphone-simulator).
+
+## Store a reference to a contact
+
+Here is where the delegate methods come into play. I used the `-(BOOL)peoplePickerNavigationController:shouldContinueAfterSelectingPerson:` method as a handle to do things with the selected contact. Returning `YES` will push the contact detail view onto the picker&apos;s navigation stack. If you don&apos;t need that, just return `NO`.
+
+The most important part of this is getting the ID of the contact/person (aka ABRecordRef). To get it, use this function: `ABRecordID contactId = ABRecordGetRecordID(contact)` This will return a primitive type of `ABRecordID` which is really a 32-bit integer. Thus, your entity attribute that will hold this value should also be 32-bit integer. But don&apos;t forget before you can save it to your entity object, it needs to be wrapped in an NSNumber by calling this method: `NSNumber *contactId = [NSNumber numberWithInt:ABRecordGetRecordID(contact)]`
+
+A similar thing will need to happen if you want to store other properties of the ABRecordRef object. Here is an example of the contact&apos;s composite name: `NSString *contactName = (__bridge NSString *)(ABRecordCopyCompositeName(contact))`.
+
+In fact, [Apple suggests storing the first and last name](http://developer.apple.com/library/ios/#documentation/ContactData/Conceptual/AddressBookProgrammingGuideforiPhone/Chapters/DirectInteraction.html).
+
+&gt; The recommended way to keep a long-term reference to a particular record is to store the first and last name, or a hash of the first and last name, in addition to the identifier. When you look up a record by ID, compare the record’s name to your stored name. If they don’t match, use the stored name to find the record, and store the new ID for the record.
+
+Once you have the ID and the other values you need to save, go ahead and store them.
+
+## Retrieve a contact using a stored reference
+
+When it&apos;s time to use your reference to look up a contact, we first need to instantiate the address book object. I ran into a hiccup in testing for iOS 5 because the method in the docs is updated for iOS 6 only and doesn&apos;t explicitly say anything about iOS 5.
+
+To get the address book in a backwards compatible way, you can simply do this:
+
+&lt;pre&gt;`ABAddressBookRef addressBook;
+if (&amp;amp;ABAddressBookCreateWithOptions != NULL) {
+    addressBook = ABAddressBookCreateWithOptions(nil, nil);
+} else { //below iOS 6
+    addressBook = ABAddressBookCreate();
+}
+`&lt;/pre&gt;
+
+Once you have the address book object, you can use this method to retrieve a contact and any of their properties by the ID you have stored. In the code below, `participant` is a Core Data entity object.
+
+&lt;pre&gt;`ABRecordID contactID = (ABRecordID)participant.contactID.intValue;
+ABRecordRef contact = ABAddressBookGetPersonWithRecordID(addressBook, contactID);
+NSString *contactName = (__bridge NSString *)ABRecordCopyCompositeName(contact);
+</code></pre><h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>I hope this makes things a bit easier for anyone starting to dig into the address book API.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://sundeepgupta.github.io/2013/06/18/working-contacts-ios-addressbook-tutorial/" data-id="ciz9bbsxb001c3fyspidh4uhn" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ios/">ios</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2013/06/20/how-to-sell-without-selling/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          How to Sell Without Selling
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2013/06/17/longest-variable-name-ever/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">The Longest Variable Name Ever!</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Uncategorized/">Uncategorized</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/books/">books</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/business/">business</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/career/">career</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/coding/">coding</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/consulting/">consulting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/craftsmanship/">craftsmanship</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/culture/">culture</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/design-patterns/">design patterns</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/fun/">fun</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pair-programming/">pair programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance/">performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/source-control/">source control</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swift/">swift</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/testing/">testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/writing/">writing</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/books/" style="font-size: 10px;">books</a> <a href="/tags/business/" style="font-size: 14px;">business</a> <a href="/tags/career/" style="font-size: 12px;">career</a> <a href="/tags/coding/" style="font-size: 18px;">coding</a> <a href="/tags/consulting/" style="font-size: 14px;">consulting</a> <a href="/tags/craftsmanship/" style="font-size: 16px;">craftsmanship</a> <a href="/tags/culture/" style="font-size: 14px;">culture</a> <a href="/tags/design-patterns/" style="font-size: 14px;">design patterns</a> <a href="/tags/fun/" style="font-size: 10px;">fun</a> <a href="/tags/functional-programming/" style="font-size: 10px;">functional programming</a> <a href="/tags/ios/" style="font-size: 20px;">ios</a> <a href="/tags/pair-programming/" style="font-size: 10px;">pair programming</a> <a href="/tags/performance/" style="font-size: 10px;">performance</a> <a href="/tags/source-control/" style="font-size: 10px;">source control</a> <a href="/tags/swift/" style="font-size: 14px;">swift</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a> <a href="/tags/writing/" style="font-size: 10px;">writing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">February 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">March 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">January 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/07/">July 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/06/">June 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/05/">May 2013</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/02/16/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2017/02/16/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/24/handling-web-view-requests-using-the-chain-of-responsibility-pattern/">Handling web view requests using the Chain of Responsibility pattern</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/17/strategy-pattern-done-functional-programming/">Strategy pattern done with Functional Programming</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/10/liquid-smooth-ios-collection-view-scrolling-lots-images/">Liquid smooth iOS collection view scrolling with lots of images</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Sundeep Gupta<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
